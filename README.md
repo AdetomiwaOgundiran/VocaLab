@@ -1,6 +1,6 @@
 # Vocalab
 
-**Turn Your Startup Idea Into Actionable Plan**
+**Turn Your Product Idea or customer feedback Into Actionable Plan**
 
 Vocalab is a web application that helps entrepreneurs and startup founders transform their ideas into structured product roadmaps. Simply record your pitch, and Vocalab's AI-powered analysis breaks down your concept into a comprehensive product development framework visualized as an interactive Kanban board.
 
