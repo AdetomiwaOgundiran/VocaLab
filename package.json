@@ -1,0 +1,26 @@
+{
+  "name": "vocalab",
+  "version": "1.0.0",
+  "description": "Turn your startup idea into actionable plan",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "keywords": [
+    "startup",
+    "pitch",
+    "kanban",
+    "roadmap",
+    "ai",
+    "product-management"
+  ],
+  "author": "Adetomiwa Ogundiran",
+  "license": "MIT",
+  "dependencies": {
+    "openai": "^4.20.1"
+  },
+  "devDependencies": {
+    "vercel": "^33.0.0"
+  }
+}

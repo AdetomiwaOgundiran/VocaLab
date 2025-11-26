@@ -43,26 +43,55 @@ Vocalab features a modern, professional SaaS design with:
 
 ## Technology Stack
 
+### Frontend
 - **HTML5**: Semantic markup and structure
 - **CSS3**: Modern styling with gradients, shadows, and animations
 - **Vanilla JavaScript**: No frameworks or dependencies
 - **Web Audio API**: Browser-based audio recording
 - **Drag and Drop API**: Native browser drag-and-drop functionality
+- **LocalStorage**: Persist roadmaps locally
+
+### Backend
+- **Vercel Serverless Functions**: API endpoints without managing servers
+- **OpenAI Whisper API**: Speech-to-text transcription
+- **OpenAI GPT-4**: AI-powered pitch analysis and framework selection
+- **Node.js**: Runtime for serverless functions
 
 ## Installation
 
+### For Development (Local)
+
 1. Clone the repository:
 ```bash
-git clone https://gitlab.com/YOUR_USERNAME/vocalab.git
-cd vocalab
+git clone https://github.com/AdetomiwaOgundiran/VocaLab.git
+cd VocaLab
 ```
 
-2. Open `index.html` in your browser:
+2. Install dependencies:
 ```bash
-open index.html
+npm install
 ```
 
-That's it! No build process or dependencies required.
+3. Set up environment variables:
+```bash
+cp .env.example .env
+```
+
+4. Add your OpenAI API key to `.env`:
+```
+OPENAI_API_KEY=sk-your-actual-api-key-here
+```
+
+5. Run the development server:
+```bash
+npm run dev
+```
+
+6. Open your browser to `http://localhost:3000`
+
+### For Production (Vercel Deployment)
+
+See the [Deployment](#deployment) section below.
 
 ## Usage
 
@@ -79,10 +108,17 @@ That's it! No build process or dependencies required.
 
 ```
 vocalab/
-├── index.html          # Main HTML structure
-├── styles.css          # All styling and design
-├── app.js             # Application logic and functionality
-└── README.md          # Project documentation
+├── api/
+│   ├── transcribe.js      # Serverless function for audio transcription
+│   └── analyze.js         # Serverless function for AI analysis
+├── index.html             # Main HTML structure
+├── styles.css             # All styling and design
+├── app.js                 # Frontend application logic
+├── package.json           # Dependencies and scripts
+├── vercel.json            # Vercel configuration
+├── .env.example           # Environment variables template
+├── .gitignore             # Git ignore rules
+└── README.md              # Project documentation
 ```
 
 ## Browser Compatibility
@@ -99,31 +135,106 @@ Vocalab works best on modern browsers that support:
 - Safari 14+
 - Edge 79+
 
+## Deployment
+
+### Deploy to Vercel (Recommended)
+
+1. **Get an OpenAI API Key**:
+   - Go to https://platform.openai.com/api-keys
+   - Create a new API key
+   - Copy it for the next step
+
+2. **Deploy to Vercel**:
+
+   **Option A: Using Vercel CLI** (Recommended)
+   ```bash
+   # Install Vercel CLI globally
+   npm install -g vercel
+
+   # Deploy from your project directory
+   vercel
+
+   # Follow the prompts:
+   # - Link to existing project or create new
+   # - Set up project settings
+   ```
+
+   **Option B: Using GitHub Integration**
+   - Push your code to GitHub (already done!)
+   - Go to https://vercel.com
+   - Click "Add New Project"
+   - Import your GitHub repository
+   - Vercel will auto-detect the configuration
+
+3. **Set Environment Variables** in Vercel:
+   - In your Vercel project dashboard
+   - Go to **Settings** → **Environment Variables**
+   - Add: `OPENAI_API_KEY` with your OpenAI API key
+   - Click "Save"
+
+4. **Redeploy** (if needed):
+   ```bash
+   vercel --prod
+   ```
+
+Your app will be live at `https://your-project.vercel.app`!
+
+### Cost Estimation
+
+**OpenAI API Costs** (Pay-as-you-go):
+- Whisper (transcription): ~$0.006 per minute of audio
+- GPT-4 (analysis): ~$0.03 per request
+
+**Example**: 100 pitch analyses ≈ $3.60
+
+**Vercel Hosting**: Free tier includes:
+- 100GB bandwidth per month
+- Unlimited serverless function calls
+- Custom domains
+
+### Environment Variables
+
+Required environment variables:
+- `OPENAI_API_KEY`: Your OpenAI API key
+
 ## Future Enhancements
 
 Potential features for future versions:
-- [ ] Real AI integration with OpenAI or similar APIs
-- [ ] Speech-to-text transcription
+- [x] Real AI integration with OpenAI
+- [x] Speech-to-text transcription (Whisper)
+- [x] Save roadmaps to local storage
 - [ ] Export roadmap as PDF or image
-- [ ] Save roadmaps to local storage
+- [ ] Load and manage multiple saved roadmaps
 - [ ] User accounts and cloud sync
-- [ ] Collaborative roadmaps
+- [ ] Collaborative roadmaps (share with team)
 - [ ] Custom framework creation
 - [ ] Timeline view option
 - [ ] Integration with project management tools (Jira, Trello, Asana)
 - [ ] Analytics and progress tracking
+- [ ] Pitch feedback and improvement suggestions
 
 ## Development
 
-### Current Implementation
-The AI analysis is currently **simulated** - it randomly selects from predefined frameworks and generates appropriate roadmap items. This allows the app to work without external API dependencies or costs.
+### Architecture
 
-### Adding Real AI
-To integrate real AI analysis:
-1. Add API integration in `app.js` (OpenAI, Anthropic Claude, etc.)
-2. Send audio or transcribed text to AI service
-3. Parse AI response to extract roadmap items
-4. Update `generateRoadmap()` function with AI-generated data
+Vocalab uses a serverless architecture:
+
+1. **Frontend** (Vanilla JS): Handles UI, recording, and Kanban interactions
+2. **API Layer** (Vercel Functions): Secure backend for API calls
+3. **AI Services** (OpenAI): Whisper for transcription, GPT-4 for analysis
+4. **Storage** (LocalStorage): Client-side persistence of roadmaps
+
+### Key Features Implemented
+
+- **Real AI Analysis**: GPT-4 analyzes pitch content and selects optimal framework
+- **Speech-to-Text**: Whisper API transcribes audio recordings
+- **Smart Roadmap Generation**: AI creates customized phases specific to your pitch
+- **Persistent Storage**: Roadmaps saved locally (last 10 pitches)
+- **Drag-and-Drop**: Native browser API for Kanban card management
+
+### API Security
+
+API keys are securely stored as environment variables in Vercel and never exposed to the frontend. All AI requests go through serverless functions that act as a secure proxy.
 
 ## Contributing
 

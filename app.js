@@ -5,6 +5,7 @@ let recordingTimer;
 let recordingSeconds = 0;
 let isRecording = false;
 let hasRecorded = false;
+let recordedAudioBlob = null;
 
 // DOM elements
 const startRecordingBtn = document.getElementById('startRecordingBtn');
@@ -139,9 +140,8 @@ async function startRecording() {
         };
 
         mediaRecorder.onstop = () => {
-            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-            // In a real app, you would send this to a server
-            console.log('Recording completed', audioBlob);
+            recordedAudioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            console.log('Recording completed', recordedAudioBlob);
         };
 
         mediaRecorder.start();
@@ -193,28 +193,86 @@ function updateTimer() {
         `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 }
 
-function analyzePitch() {
-    // Simulate AI analysis
-    recordingStatus.textContent = 'Analyzing your pitch...';
+async function analyzePitch() {
+    if (!recordedAudioBlob) {
+        recordingStatus.textContent = 'Error: No recording found. Please record your pitch first.';
+        return;
+    }
+
+    recordingStatus.textContent = 'Transcribing your pitch...';
     analyzeBtn.disabled = true;
-    analyzeBtn.textContent = 'Analyzing...';
+    analyzeBtn.textContent = 'Processing...';
 
-    setTimeout(() => {
-        // Select a random framework
-        const selectedFramework = frameworks[Math.floor(Math.random() * frameworks.length)];
+    try {
+        // Convert audio blob to base64
+        const reader = new FileReader();
+        reader.readAsDataURL(recordedAudioBlob);
 
-        // Close modal and show Kanban board
-        recordingModal.classList.remove('active');
-        document.querySelector('.hero').style.display = 'none';
-        document.getElementById('features').style.display = 'none';
-        kanbanSection.style.display = 'block';
+        reader.onloadend = async () => {
+            const audioBase64 = reader.result;
 
-        // Generate roadmap
-        generateRoadmap(selectedFramework);
+            try {
+                // Step 1: Transcribe audio
+                const transcribeResponse = await fetch('/api/transcribe', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ audio: audioBase64 }),
+                });
 
+                if (!transcribeResponse.ok) {
+                    throw new Error('Transcription failed');
+                }
+
+                const transcribeData = await transcribeResponse.json();
+                console.log('Transcription:', transcribeData.transcription);
+
+                // Step 2: Analyze pitch
+                recordingStatus.textContent = 'Analyzing your pitch with AI...';
+
+                const analyzeResponse = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ transcription: transcribeData.transcription }),
+                });
+
+                if (!analyzeResponse.ok) {
+                    throw new Error('Analysis failed');
+                }
+
+                const analyzeData = await analyzeResponse.json();
+                const framework = analyzeData.analysis;
+
+                // Save to localStorage
+                saveRoadmap(framework, transcribeData.transcription);
+
+                // Close modal and show Kanban board
+                recordingModal.classList.remove('active');
+                document.querySelector('.hero').style.display = 'none';
+                document.getElementById('features').style.display = 'none';
+                kanbanSection.style.display = 'block';
+
+                // Generate roadmap
+                generateRoadmap(framework);
+
+                analyzeBtn.disabled = false;
+                analyzeBtn.textContent = 'Analyze Pitch';
+            } catch (error) {
+                console.error('Analysis error:', error);
+                recordingStatus.textContent = 'Error: ' + error.message + '. Please try again.';
+                analyzeBtn.disabled = false;
+                analyzeBtn.textContent = 'Analyze Pitch';
+            }
+        };
+    } catch (error) {
+        console.error('Error:', error);
+        recordingStatus.textContent = 'Error processing audio. Please try again.';
         analyzeBtn.disabled = false;
         analyzeBtn.textContent = 'Analyze Pitch';
-    }, 2000);
+    }
 }
 
 function generateRoadmap(framework) {
@@ -335,6 +393,71 @@ function resetToLanding() {
     document.querySelector('.hero').style.display = 'block';
     document.getElementById('features').style.display = 'block';
     window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// LocalStorage functions
+function saveRoadmap(framework, transcription) {
+    const roadmap = {
+        framework,
+        transcription,
+        timestamp: new Date().toISOString(),
+        kanbanState: {
+            backlog: [],
+            'in-progress': [],
+            completed: []
+        }
+    };
+
+    // Get existing roadmaps
+    const roadmaps = JSON.parse(localStorage.getItem('vocalab_roadmaps') || '[]');
+
+    // Add new roadmap
+    roadmaps.unshift(roadmap); // Add to beginning
+
+    // Keep only last 10 roadmaps
+    if (roadmaps.length > 10) {
+        roadmaps.pop();
+    }
+
+    // Save back to localStorage
+    localStorage.setItem('vocalab_roadmaps', JSON.stringify(roadmaps));
+    localStorage.setItem('vocalab_current_roadmap', JSON.stringify(roadmap));
+}
+
+function loadRoadmap() {
+    const roadmap = JSON.parse(localStorage.getItem('vocalab_current_roadmap'));
+    if (roadmap) {
+        return roadmap;
+    }
+    return null;
+}
+
+function saveKanbanState() {
+    const roadmap = loadRoadmap();
+    if (!roadmap) return;
+
+    // Save current kanban state
+    const columns = ['backlog', 'in-progress', 'completed'];
+    columns.forEach(columnId => {
+        const column = document.getElementById(columnId);
+        if (column) {
+            const cards = Array.from(column.children).map(card => ({
+                id: card.dataset.id,
+                html: card.innerHTML
+            }));
+            roadmap.kanbanState[columnId] = cards;
+        }
+    });
+
+    localStorage.setItem('vocalab_current_roadmap', JSON.stringify(roadmap));
+}
+
+// Save kanban state when cards are moved
+const originalHandleDrop = handleDrop;
+function handleDrop(e) {
+    const result = originalHandleDrop.call(this, e);
+    saveKanbanState();
+    return result;
 }
 
 // Initialize
