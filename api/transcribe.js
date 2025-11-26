@@ -1,5 +1,4 @@
 import OpenAI from 'openai';
-import { toFile } from 'openai/uploads';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -41,19 +40,21 @@ export default async function handler(req, res) {
 
     console.log('Buffer size:', audioBuffer.length);
 
-    // Convert buffer to File object using OpenAI's helper
-    const audioFile = await toFile(audioBuffer, 'audio.webm', { type: 'audio/webm' });
+    // Create a File object compatible with OpenAI SDK
+    // The SDK expects a File with name and type properties
+    const file = new File([audioBuffer], 'recording.webm', {
+      type: 'audio/webm',
+    });
 
     console.log('Calling Whisper API...');
 
     // Transcribe audio using Whisper
     const transcription = await openai.audio.transcriptions.create({
-      file: audioFile,
+      file: file,
       model: 'whisper-1',
-      language: 'en',
     });
 
-    console.log('Transcription successful');
+    console.log('Transcription successful:', transcription.text);
 
     return res.status(200).json({
       success: true,
