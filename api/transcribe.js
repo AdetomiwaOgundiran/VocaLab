@@ -1,4 +1,5 @@
 import OpenAI from 'openai';
+import { toFile } from 'openai/uploads';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -34,10 +35,8 @@ export default async function handler(req, res) {
     // Convert base64 audio to buffer
     const audioBuffer = Buffer.from(audio.split(',')[1], 'base64');
 
-    // Create a File-like object for OpenAI
-    const audioFile = new File([audioBuffer], 'audio.webm', {
-      type: 'audio/webm',
-    });
+    // Convert buffer to File object using OpenAI's helper
+    const audioFile = await toFile(audioBuffer, 'audio.webm', { type: 'audio/webm' });
 
     // Transcribe audio using Whisper
     const transcription = await openai.audio.transcriptions.create({
