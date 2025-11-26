@@ -1,7 +1,7 @@
 // State management
 let mediaRecorder;
 let audioChunks = [];
-let recordingTimer;
+let timerInterval;
 let recordingSeconds = 0;
 let isRecording = false;
 let hasRecorded = false;
@@ -14,7 +14,7 @@ const closeModal = document.getElementById('closeModal');
 const toggleRecordBtn = document.getElementById('toggleRecordBtn');
 const analyzeBtn = document.getElementById('analyzeBtn');
 const recordingStatus = document.getElementById('recordingStatus');
-const recordingTimer = document.getElementById('recordingTimer');
+const recordingTimerDisplay = document.getElementById('recordingTimer');
 const visualizer = document.getElementById('visualizer');
 const kanbanSection = document.getElementById('kanban');
 const backToLanding = document.getElementById('backToLanding');
@@ -176,20 +176,20 @@ function stopRecording() {
 }
 
 function startTimer() {
-    recordingTimer = setInterval(() => {
+    timerInterval = setInterval(() => {
         recordingSeconds++;
         updateTimer();
     }, 1000);
 }
 
 function stopTimer() {
-    clearInterval(recordingTimer);
+    clearInterval(timerInterval);
 }
 
 function updateTimer() {
     const minutes = Math.floor(recordingSeconds / 60);
     const seconds = recordingSeconds % 60;
-    document.getElementById('recordingTimer').textContent =
+    recordingTimerDisplay.textContent =
         `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 }
 
