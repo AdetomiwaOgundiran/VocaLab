@@ -318,12 +318,25 @@ function initializeDragAndDrop() {
     const cards = document.querySelectorAll('.kanban-card');
     const columns = document.querySelectorAll('.column-content');
 
+    console.log('Initializing drag and drop:', cards.length, 'cards,', columns.length, 'columns');
+
     cards.forEach(card => {
+        // Remove existing listeners to prevent duplicates
+        card.removeEventListener('dragstart', handleDragStart);
+        card.removeEventListener('dragend', handleDragEnd);
+
+        // Add listeners
         card.addEventListener('dragstart', handleDragStart);
         card.addEventListener('dragend', handleDragEnd);
     });
 
     columns.forEach(column => {
+        // Remove existing listeners
+        column.removeEventListener('dragover', handleDragOver);
+        column.removeEventListener('drop', handleDrop);
+        column.removeEventListener('dragleave', handleDragLeave);
+
+        // Add listeners
         column.addEventListener('dragover', handleDragOver);
         column.addEventListener('drop', handleDrop);
         column.addEventListener('dragleave', handleDragLeave);
@@ -333,12 +346,15 @@ function initializeDragAndDrop() {
 let draggedElement = null;
 
 function handleDragStart(e) {
+    console.log('Drag start');
     draggedElement = this;
     this.classList.add('dragging');
     e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', this.innerHTML);
 }
 
 function handleDragEnd(e) {
+    console.log('Drag end');
     this.classList.remove('dragging');
 
     // Remove drag-over class from all columns
@@ -348,9 +364,8 @@ function handleDragEnd(e) {
 }
 
 function handleDragOver(e) {
-    if (e.preventDefault) {
-        e.preventDefault();
-    }
+    e.preventDefault();
+    e.stopPropagation();
 
     e.dataTransfer.dropEffect = 'move';
     this.classList.add('drag-over');
@@ -359,17 +374,19 @@ function handleDragOver(e) {
 }
 
 function handleDragLeave(e) {
-    this.classList.remove('drag-over');
+    // Only remove if we're leaving the column itself, not a child
+    if (e.target.classList.contains('column-content')) {
+        this.classList.remove('drag-over');
+    }
 }
 
 function handleDrop(e) {
-    if (e.stopPropagation) {
-        e.stopPropagation();
-    }
-
+    console.log('Drop triggered');
+    e.stopPropagation();
     e.preventDefault();
 
-    if (draggedElement) {
+    if (draggedElement && this.classList.contains('column-content')) {
+        console.log('Appending card to column');
         this.appendChild(draggedElement);
         updateItemCounts();
         saveKanbanState();
