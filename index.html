@@ -10,17 +10,17 @@
     <!-- Navigation -->
     <nav class="navbar">
         <div class="container">
-            <div class="nav-brand">Vocalab</div>
+            <div class="nav-brand" id="navBrand" style="cursor: pointer;">Vocalab</div>
             <div class="nav-links">
-                <a href="#features">Features</a>
-                <a href="#how-it-works">How It Works</a>
-                <a href="#" class="btn-secondary">Get Started</a>
+                <a href="#features" id="featuresLink">Features</a>
+                <a href="#features" id="howItWorksLink">How It Works</a>
+                <a href="#" class="btn-secondary" id="getStartedBtn">Get Started</a>
             </div>
         </div>
     </nav>
 
     <!-- Hero Section -->
-    <section class="hero">
+    <section class="hero" id="home">
         <div class="container">
             <h1 class="hero-title">Turn Your Startup Idea Into Actionable Plan</h1>
             <p class="hero-subtitle">Record your pitch, get AI-powered insights, and transform your vision into a structured product roadmap in minutes.</p>
@@ -137,9 +137,26 @@
                     <div class="column-content" id="completed"></div>
                 </div>
             </div>
-            <button class="btn-secondary" id="backToLanding">Record New Pitch</button>
+            <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem;">
+                <button class="btn-primary" id="saveRoadmapBtn">Save Roadmap</button>
+                <button class="btn-secondary" id="viewSavedBtn">View Saved Roadmaps</button>
+                <button class="btn-secondary" id="backToLanding">Record New Pitch</button>
+            </div>
         </div>
     </section>
+
+    <!-- Saved Roadmaps Modal -->
+    <div id="savedRoadmapsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Saved Roadmaps</h2>
+                <button class="close-btn" id="closeSavedModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="savedRoadmapsList"></div>
+            </div>
+        </div>
+    </div>
 
     <script src="app.js"></script>
 </body>

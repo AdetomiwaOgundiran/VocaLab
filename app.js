@@ -19,6 +19,19 @@ const visualizer = document.getElementById('visualizer');
 const kanbanSection = document.getElementById('kanban');
 const backToLanding = document.getElementById('backToLanding');
 
+// Navigation elements
+const navBrand = document.getElementById('navBrand');
+const featuresLink = document.getElementById('featuresLink');
+const howItWorksLink = document.getElementById('howItWorksLink');
+const getStartedBtn = document.getElementById('getStartedBtn');
+
+// Save/Load elements
+const saveRoadmapBtn = document.getElementById('saveRoadmapBtn');
+const viewSavedBtn = document.getElementById('viewSavedBtn');
+const savedRoadmapsModal = document.getElementById('savedRoadmapsModal');
+const closeSavedModal = document.getElementById('closeSavedModal');
+const savedRoadmapsList = document.getElementById('savedRoadmapsList');
+
 // Product frameworks database for simulation
 const frameworks = [
     {
@@ -91,10 +104,28 @@ toggleRecordBtn.addEventListener('click', toggleRecording);
 analyzeBtn.addEventListener('click', analyzePitch);
 backToLanding.addEventListener('click', resetToLanding);
 
+// Navigation listeners
+navBrand.addEventListener('click', goToHome);
+getStartedBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    openRecordingModal();
+});
+
+// Save/Load listeners
+saveRoadmapBtn.addEventListener('click', saveCurrentRoadmap);
+viewSavedBtn.addEventListener('click', openSavedRoadmapsModal);
+closeSavedModal.addEventListener('click', closeSavedRoadmapsModal);
+
 // Click outside modal to close
 recordingModal.addEventListener('click', (e) => {
     if (e.target === recordingModal) {
         closeRecordingModal();
+    }
+});
+
+savedRoadmapsModal.addEventListener('click', (e) => {
+    if (e.target === savedRoadmapsModal) {
+        closeSavedRoadmapsModal();
     }
 });
 
@@ -468,6 +499,136 @@ function saveKanbanState() {
     });
 
     localStorage.setItem('vocalab_current_roadmap', JSON.stringify(roadmap));
+}
+
+// Navigation functions
+function goToHome() {
+    kanbanSection.style.display = 'none';
+    document.querySelector('.hero').style.display = 'block';
+    document.getElementById('features').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Save/Load functions
+function saveCurrentRoadmap() {
+    // Update the current roadmap with latest kanban state
+    saveKanbanState();
+
+    const roadmap = loadRoadmap();
+    if (!roadmap) {
+        alert('No roadmap to save!');
+        return;
+    }
+
+    // Add timestamp for this save
+    roadmap.savedAt = new Date().toISOString();
+
+    // Get existing saved roadmaps
+    const savedRoadmaps = JSON.parse(localStorage.getItem('vocalab_roadmaps') || '[]');
+
+    // Check if this roadmap already exists (based on timestamp)
+    const existingIndex = savedRoadmaps.findIndex(r => r.timestamp === roadmap.timestamp);
+
+    if (existingIndex >= 0) {
+        // Update existing roadmap
+        savedRoadmaps[existingIndex] = roadmap;
+        alert('Roadmap updated successfully!');
+    } else {
+        // Add new roadmap
+        savedRoadmaps.unshift(roadmap);
+        // Keep only last 10
+        if (savedRoadmaps.length > 10) {
+            savedRoadmaps.pop();
+        }
+        alert('Roadmap saved successfully!');
+    }
+
+    localStorage.setItem('vocalab_roadmaps', JSON.stringify(savedRoadmaps));
+}
+
+function openSavedRoadmapsModal() {
+    const savedRoadmaps = JSON.parse(localStorage.getItem('vocalab_roadmaps') || '[]');
+
+    if (savedRoadmaps.length === 0) {
+        savedRoadmapsList.innerHTML = '<p style="text-align: center; color: #64748b; padding: 2rem;">No saved roadmaps yet. Create and save your first roadmap!</p>';
+    } else {
+        savedRoadmapsList.innerHTML = savedRoadmaps.map((roadmap, index) => {
+            const date = new Date(roadmap.timestamp);
+            const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+            return `
+                <div class="saved-roadmap-item" style="border: 2px solid #e2e8f0; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem; cursor: pointer; transition: all 0.3s;" data-index="${index}">
+                    <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">${roadmap.framework.name}</h3>
+                    <p style="color: #64748b; font-size: 0.9rem;">Created: ${formattedDate}</p>
+                    <p style="color: #64748b; font-size: 0.9rem;">${roadmap.framework.phases.length} phases</p>
+                </div>
+            `;
+        }).join('');
+
+        // Add click handlers to load roadmaps
+        document.querySelectorAll('.saved-roadmap-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const index = parseInt(this.dataset.index);
+                loadSavedRoadmap(index);
+            });
+            item.addEventListener('mouseenter', function() {
+                this.style.borderColor = '#14b8a6';
+                this.style.transform = 'translateY(-2px)';
+            });
+            item.addEventListener('mouseleave', function() {
+                this.style.borderColor = '#e2e8f0';
+                this.style.transform = 'translateY(0)';
+            });
+        });
+    }
+
+    savedRoadmapsModal.classList.add('active');
+}
+
+function closeSavedRoadmapsModal() {
+    savedRoadmapsModal.classList.remove('active');
+}
+
+function loadSavedRoadmap(index) {
+    const savedRoadmaps = JSON.parse(localStorage.getItem('vocalab_roadmaps') || '[]');
+    const roadmap = savedRoadmaps[index];
+
+    if (roadmap) {
+        // Set as current roadmap
+        localStorage.setItem('vocalab_current_roadmap', JSON.stringify(roadmap));
+
+        // Close modal
+        closeSavedRoadmapsModal();
+
+        // Show kanban section
+        document.querySelector('.hero').style.display = 'none';
+        document.getElementById('features').style.display = 'none';
+        kanbanSection.style.display = 'block';
+
+        // Generate roadmap
+        generateRoadmap(roadmap.framework);
+
+        // Restore kanban state if available
+        if (roadmap.kanbanState) {
+            setTimeout(() => {
+                Object.keys(roadmap.kanbanState).forEach(columnId => {
+                    const column = document.getElementById(columnId);
+                    if (column && roadmap.kanbanState[columnId]) {
+                        column.innerHTML = '';
+                        roadmap.kanbanState[columnId].forEach(cardData => {
+                            const card = document.createElement('div');
+                            card.className = 'kanban-card';
+                            card.draggable = true;
+                            card.dataset.id = cardData.id;
+                            card.innerHTML = cardData.html;
+                            column.appendChild(card);
+                        });
+                    }
+                });
+                initializeDragAndDrop();
+                updateItemCounts();
+            }, 100);
+        }
+    }
 }
 
 // Initialize
