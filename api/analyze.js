@@ -31,9 +31,12 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Transcription is required' });
     }
 
-    // Analyze the pitch using GPT-4
+    console.log('Transcription received:', transcription.substring(0, 100));
+    console.log('Calling GPT-4...');
+
+    // Analyze the pitch using GPT-4o-mini (more accessible and cheaper)
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4',
+      model: 'gpt-4o-mini',
       messages: [
         {
           role: 'system',
@@ -73,7 +76,11 @@ Generate 6-8 phases that are specific to the pitch, not generic templates.`,
       response_format: { type: 'json_object' },
     });
 
+    console.log('GPT response received');
+
     const analysis = JSON.parse(completion.choices[0].message.content);
+
+    console.log('Analysis successful');
 
     return res.status(200).json({
       success: true,
@@ -81,9 +88,15 @@ Generate 6-8 phases that are specific to the pitch, not generic templates.`,
     });
   } catch (error) {
     console.error('Analysis error:', error);
+    console.error('Error name:', error.name);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+
     return res.status(500).json({
       error: 'Failed to analyze pitch',
       details: error.message,
+      errorName: error.name,
+      errorCode: error.code,
     });
   }
 }
