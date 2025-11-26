@@ -372,6 +372,7 @@ function handleDrop(e) {
     if (draggedElement) {
         this.appendChild(draggedElement);
         updateItemCounts();
+        saveKanbanState();
     }
 
     this.classList.remove('drag-over');
@@ -450,14 +451,6 @@ function saveKanbanState() {
     });
 
     localStorage.setItem('vocalab_current_roadmap', JSON.stringify(roadmap));
-}
-
-// Save kanban state when cards are moved
-const originalHandleDrop = handleDrop;
-function handleDrop(e) {
-    const result = originalHandleDrop.call(this, e);
-    saveKanbanState();
-    return result;
 }
 
 // Initialize
