@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vocalab - Turn Your Startup Idea Into Actionable Plan</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">Vocalab</div>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="#" class="btn-secondary">Get Started</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1 class="hero-title">Turn Your Startup Idea Into Actionable Plan</h1>
+            <p class="hero-subtitle">Record your pitch, get AI-powered insights, and transform your vision into a structured product roadmap in minutes.</p>
+            <button class="btn-primary" id="startRecordingBtn">
+                <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M12 1v6m0 6v6m8.66-11.66l-5.2 3m-5.92 3.47l-5.2 3M1 12h6m6 0h6"></path>
+                </svg>
+                Start Recording Your Pitch
+            </button>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <h2 class="section-title">Three Steps to Success</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                            <line x1="12" y1="19" x2="12" y2="22"></line>
+                        </svg>
+                    </div>
+                    <h3>Record Your Pitch</h3>
+                    <p>Simply speak your startup idea. Our app captures every detail of your vision in seconds.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                    </div>
+                    <h3>AI-Powered Analysis</h3>
+                    <p>Advanced AI breaks down your idea into the best product development framework.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="14" width="7" height="7"></rect>
+                            <rect x="3" y="14" width="7" height="7"></rect>
+                        </svg>
+                    </div>
+                    <h3>Kanban Roadmap</h3>
+                    <p>Visualize your roadmap in an interactive Kanban board. Drag, drop, and track your progress.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Recording Modal -->
+    <div id="recordingModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Record Your Pitch</h2>
+                <button class="close-btn" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="recording-container">
+                    <div class="recording-visualizer" id="visualizer">
+                        <div class="pulse-ring"></div>
+                        <div class="recording-icon">
+                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                                <line x1="12" y1="19" x2="12" y2="22"></line>
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="recording-status" id="recordingStatus">Click the button below to start recording</p>
+                    <p class="recording-timer" id="recordingTimer">00:00</p>
+                    <div class="recording-controls">
+                        <button class="btn-record" id="toggleRecordBtn">Start Recording</button>
+                        <button class="btn-primary" id="analyzeBtn" style="display: none;">Analyze Pitch</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kanban Board -->
+    <section id="kanban" class="kanban-section" style="display: none;">
+        <div class="container-wide">
+            <div class="kanban-header">
+                <h2>Your Product Roadmap</h2>
+                <div class="framework-badge" id="frameworkBadge"></div>
+            </div>
+            <div class="kanban-board">
+                <div class="kanban-column" data-column="backlog">
+                    <div class="column-header">
+                        <h3>Backlog</h3>
+                        <span class="item-count">0</span>
+                    </div>
+                    <div class="column-content" id="backlog"></div>
+                </div>
+                <div class="kanban-column" data-column="in-progress">
+                    <div class="column-header">
+                        <h3>In Progress</h3>
+                        <span class="item-count">0</span>
+                    </div>
+                    <div class="column-content" id="in-progress"></div>
+                </div>
+                <div class="kanban-column" data-column="completed">
+                    <div class="column-header">
+                        <h3>Completed</h3>
+                        <span class="item-count">0</span>
+                    </div>
+                    <div class="column-content" id="completed"></div>
+                </div>
+            </div>
+            <button class="btn-secondary" id="backToLanding">Record New Pitch</button>
+        </div>
+    </section>
+
+    <script src="app.js"></script>
+</body>
+</html>
