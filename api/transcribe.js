@@ -32,11 +32,19 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Audio data is required' });
     }
 
+    console.log('API Key present:', !!process.env.OPENAI_API_KEY);
+    console.log('Audio data length:', audio.length);
+
     // Convert base64 audio to buffer
-    const audioBuffer = Buffer.from(audio.split(',')[1], 'base64');
+    const base64Data = audio.includes(',') ? audio.split(',')[1] : audio;
+    const audioBuffer = Buffer.from(base64Data, 'base64');
+
+    console.log('Buffer size:', audioBuffer.length);
 
     // Convert buffer to File object using OpenAI's helper
     const audioFile = await toFile(audioBuffer, 'audio.webm', { type: 'audio/webm' });
+
+    console.log('Calling Whisper API...');
 
     // Transcribe audio using Whisper
     const transcription = await openai.audio.transcriptions.create({
@@ -45,15 +53,22 @@ export default async function handler(req, res) {
       language: 'en',
     });
 
+    console.log('Transcription successful');
+
     return res.status(200).json({
       success: true,
       transcription: transcription.text,
     });
   } catch (error) {
     console.error('Transcription error:', error);
+    console.error('Error name:', error.name);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+
     return res.status(500).json({
       error: 'Failed to transcribe audio',
       details: error.message,
+      errorName: error.name,
     });
   }
 }
